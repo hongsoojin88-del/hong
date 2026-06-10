@@ -3,12 +3,13 @@ import pandas as pd
 import plotly.express as px
 import plotly.graph_objects as go
 import os
-import google.generativeai as genai
+from google import genai
+from google.genai import types
 from dotenv import load_dotenv
 
 load_dotenv()
 api_key = st.secrets.get("GEMINI_API_KEY") or os.getenv("GEMINI_API_KEY")
-genai.configure(api_key=api_key)
+client = genai.Client(api_key=api_key)
 
 st.set_page_config(page_title="고객등급별 만족도 분석", layout="wide")
 
@@ -259,14 +260,13 @@ if user_input:
     with st.chat_message("assistant"):
         with st.spinner("분석 중..."):
             try:
-                model = genai.GenerativeModel("gemini-1.5-flash")
                 context = build_context(fdf)
                 role_map = {"user": "user", "assistant": "model"}
                 history = [
-                    {"role": role_map[m["role"]], "parts": [m["content"]]}
+                    types.Content(role=role_map[m["role"]], parts=[types.Part(text=m["content"])])
                     for m in st.session_state.chat_history[:-1]
                 ]
-                chat = model.start_chat(history=history)
+                chat = client.chats.create(model="gemini-1.5-flash", history=history)
                 response = chat.send_message(f"{context}\n\n질문: {user_input}")
                 answer = response.text
             except Exception as e:
