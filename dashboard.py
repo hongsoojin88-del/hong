@@ -259,7 +259,7 @@ if user_input:
     with st.chat_message("assistant"):
         with st.spinner("분석 중..."):
             try:
-                model = genai.GenerativeModel("gemini-2.5-flash")
+                model = genai.GenerativeModel("gemini-1.5-flash")
                 context = build_context(fdf)
                 role_map = {"user": "user", "assistant": "model"}
                 history = [
@@ -270,7 +270,10 @@ if user_input:
                 response = chat.send_message(f"{context}\n\n질문: {user_input}")
                 answer = response.text
             except Exception as e:
-                answer = f"오류가 발생했습니다: {e}"
+                if "429" in str(e) or "quota" in str(e).lower():
+                    answer = "⚠️ API 요청 한도를 초과했습니다. 잠시 후 다시 시도해주세요."
+                else:
+                    answer = f"오류가 발생했습니다: {e}"
             st.markdown(answer)
 
     st.session_state.chat_history.append({"role": "assistant", "content": answer})
