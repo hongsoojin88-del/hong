@@ -266,7 +266,7 @@ if user_input:
                     types.Content(role=role_map[m["role"]], parts=[types.Part(text=m["content"])])
                     for m in st.session_state.chat_history[:-1]
                 ]
-                chat = client.chats.create(model="gemini-1.5-flash", history=history)
+                chat = client.chats.create(model="gemini-2.0-flash", history=history)
                 response = chat.send_message(f"{context}\n\n질문: {user_input}")
                 answer = response.text
             except Exception as e:
